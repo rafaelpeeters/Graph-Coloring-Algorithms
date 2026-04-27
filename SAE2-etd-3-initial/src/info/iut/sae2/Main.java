@@ -10,7 +10,8 @@ import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
  *
- * @author rbourqui
+ * @author antcarpentier
+ * @author rsarrazainpe
  */
 public class Main {
     
@@ -24,5 +25,6 @@ public class Main {
 
         GraphViewer myWindow = new GraphViewer("A simplistic graph viewer!");
         myWindow.setVisible(true);
+        myWindow.setTitle("Antonin Carpentier - Rafael Peeters");
     }
 }
