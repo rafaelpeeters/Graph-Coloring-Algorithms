@@ -1,268 +1,338 @@
 package info.iut.sae2.graphs;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import info.iut.sae2.properties.ColorProperty;
 import info.iut.sae2.properties.LayoutProperty;
 import info.iut.sae2.properties.SizeProperty;
 
-public class Graph implements IGraph{
+public class Graph implements IGraph {
 
-    public ArrayList<IEdge> edgesList;
-    public ArrayList<INode> nodesList;
+    private ArrayList<IEdge> edgesList;
+    private ArrayList<INode> nodesList;
+    private SizeProperty sizes;
+    private LayoutProperty layout;
+    private ColorProperty colors;
 
     public Graph() {
         edgesList = new ArrayList<>();
         nodesList = new ArrayList<>();
+        sizes = new SizeProperty();
+        layout = new LayoutProperty();
+        colors = new ColorProperty();
     }
 
     @Override
     public IGraph createGraph() {
-        return new Graph(); 
-    }
-
-    @Override
-    public IGraph copy() {
         return new Graph();
     }
 
     @Override
-    public INode addNode(){
-        return nodesList.get(0);
+    public IGraph copy() {
+        Graph newGraph = new Graph();
+        newGraph.edgesList = edgesList;
+        newGraph.nodesList = nodesList;
+        return newGraph;
     }
-    
+
     @Override
-    public INode addNode(INode n){
+    public INode addNode() {
+        INode newNode = new Node();
+        nodesList.add(newNode);
+        return newNode;
+    }
+
+    @Override
+    public INode addNode(INode n) {
         nodesList.add(n);
         return n;
     }
 
     @Override
-    public IEdge addEdge(IEdge e){
+    public IEdge addEdge(IEdge e) {
         edgesList.add(e);
         return e;
     }
 
     @Override
-    public IEdge addEdge(INode src, INode tgt){
-        return edgesList.get(0);
+    public IEdge addEdge(INode src, INode tgt) {
+        IEdge newEdge = new Edge(src, tgt);
+        edgesList.add(newEdge);
+        return newEdge;
     }
+
     @Override
-    public void delNode(INode n){
+    public void delNode(INode n) {
         nodesList.remove(n);
     }
+
     @Override
-    public void delEdge(IEdge e){
+    public void delEdge(IEdge e) {
         edgesList.remove(e);
     }
 
     @Override
-    public int numberOfNodes(){
+    public int numberOfNodes() {
         return nodesList.size();
-        }
+    }
 
     @Override
-    public int numberOfEdges(){
+    public int numberOfEdges() {
         return edgesList.size();
     }
 
     @Override
-    public ArrayList<INode> getNeighbors(INode n){
+    public ArrayList<INode> getNeighbors(INode n) {
+        HashSet<INode> neighbors = new HashSet();
+        neighbors.addAll(getSuccesors(n));
+        neighbors.addAll(getPredecessors(n));
+        return new ArrayList(neighbors);
+    }
+
+    @Override
+    public ArrayList<INode> getSuccesors(INode n) {
+        ArrayList<INode> successors = new ArrayList<>();
+        for (IEdge e : edgesList) {
+            if (e.source().equals(n)) {
+                successors.add(e.target());
+            }
+        }
+        return successors;
+    }
+
+    @Override
+    public ArrayList<INode> getPredecessors(INode n) {
+        ArrayList<INode> predecessors = new ArrayList<>();
+        for (IEdge e : edgesList) {
+            if (e.target().equals(n)) {
+                predecessors.add(e.source());
+            }
+        }
+        return predecessors;
+    }
+
+    @Override
+    public ArrayList<IEdge> getInOutEdges(INode n) {
+        HashSet<IEdge> inOutEdges = new HashSet();
+        inOutEdges.addAll(getInEdges(n));
+        inOutEdges.addAll(getOutEdges(n));
+        return new ArrayList(inOutEdges);
+    }
+
+    @Override
+    public ArrayList<IEdge> getInEdges(INode n) {
+        ArrayList<IEdge> inEdges = new ArrayList();
+        for (IEdge e : edgesList) {
+            if (e.target().equals(n)) {
+                inEdges.add(e);
+            }
+        }
+        return inEdges;
+    }
+
+    @Override
+    public ArrayList<IEdge> getOutEdges(INode n) {
+        ArrayList<IEdge> outEdges = new ArrayList<>();
+        for (IEdge e : edgesList) {
+            if (e.source().equals(n)) {
+                outEdges.add(e);
+            }
+        }
+        return outEdges;
+    }
+
+    @Override
+    public ArrayList<INode> getNodes() {
         return nodesList;
     }
 
     @Override
-    public ArrayList<INode> getSuccesors(INode n){
-        return nodesList;
-    }
-
-    @Override
-    public ArrayList<INode> getPredecessors(INode n){
-        return nodesList;
-    }
-
-    @Override
-    public ArrayList<IEdge> getInOutEdges(INode n){
+    public ArrayList<IEdge> getEdges() {
         return edgesList;
     }
 
     @Override
-    public ArrayList<IEdge> getInEdges(INode n){
-        return edgesList;
+    public INode source(IEdge e) {
+        return e.source();
     }
 
     @Override
-    public ArrayList<IEdge> getOutEdges(INode n){
-        return edgesList;
+    public INode target(IEdge e) {
+        return e.target();
     }
 
     @Override
-    public ArrayList<INode> getNodes(){
-        return nodesList;
+    public int inDegree(INode n) {
+        return getInEdges(n).size();
     }
 
     @Override
-    public ArrayList<IEdge> getEdges(){
-        return edgesList;
+    public int outDegree(INode n) {
+        return getOutEdges(n).size();
     }
 
     @Override
-    public INode source(IEdge e){
-        return nodesList.get(0);
+    public int degree(INode n) {
+        return getInOutEdges(n).size();
     }
 
     @Override
-    public INode target(IEdge e){
-        return nodesList.get(0);
+    public boolean existEdge(INode src, INode tgt, boolean oriented) {
+        boolean trouve = false;
+        int i = 0;
+        while (!trouve && i < edgesList.size()) {
+            IEdge e = edgesList.get(i);
+            if (oriented && e.source().equals(src) && e.target().equals(tgt)) {
+                trouve = true;
+            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
+                trouve = true;
+            }
+            i++;
+        }
+        return trouve;
     }
 
     @Override
-    public int inDegree(INode n){
-        return 0;
+    public IEdge getEdge(INode src, INode tgt, boolean oriented) {
+        IEdge edge = null;
+        int i = 0;
+        while (edge == null && i < edgesList.size()) {
+            IEdge e = edgesList.get(i);
+            if (e.source().equals(src) && e.target().equals(tgt)) {
+                edge = e;
+            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
+                edge = e;
+            }
+            i++;
+        }
+        return edge;
     }
 
     @Override
-    public int outDegree(INode n){
-        return 0;
+    public SizeProperty getSizes() {
+        return sizes;
     }
 
     @Override
-    public int degree(INode n){
-        return 0;
+    public Size getNodeSize(INode n) {
+        return sizes.getNodeValue(n);
     }
 
     @Override
-    public boolean existEdge(INode src, INode tgt, boolean oriented){
-        return true;
+    public Double getEdgeWidth(IEdge e) {
+        return sizes.getEdgeValue(e);
     }
 
     @Override
-    public IEdge getEdge(INode src, INode tgt, boolean oriented){
-        return edgesList.get(0);
+    public void setNodeSize(INode n, Size s) {
+        sizes.setNodeValue(n,s);
     }
 
     @Override
-    public SizeProperty getSizes(){
-        return new SizeProperty();
+    public void setEdgeWidth(IEdge e, Double width) {
+        sizes.setEdgeValue(e,width);
     }
 
     @Override
-    public Size getNodeSize(INode n){
-        return new Size();
+    public void setAllNodesSizes(Size s) {
+        sizes.setAllNodesValues(s);
     }
 
     @Override
-    public Double getEdgeWidth(IEdge e){
-        return  0.0;
+    public void setAllEdgesWidths(Double width) {
+        sizes.setAllEdgesValues(width);
     }
 
     @Override
-    public void setNodeSize(INode n, Size s){
+    public LayoutProperty getLayout() {
+        return layout;
+    }
+
+    @Override
+    public Coord getNodePosition(INode n) {
+        return layout.getNodeValue(n);
+    }
+
+    @Override
+    public ArrayList<Coord> getEdgePosition(IEdge e) {
+        return layout.getEdgeValue(e);
+    }
+
+    @Override
+    public void setNodePosition(INode n, Coord c) {
+        layout.setNodeValue(n, c);
+
+    }
+
+    @Override
+    public void setEdgePosition(IEdge e, ArrayList<Coord> bends) {
+        layout.setEdgeValue(e, bends);
+    }
+
+    @Override
+    public void setAllNodesPositions(Coord c) {
+        layout.setAllNodesValues(c);   
+    }
+
+    @Override
+    public void setAllEdgesPositions(ArrayList<Coord> bends) {
+        layout.setAllEdgesValues(bends);
+    }
+    // A FAIRE
+    @Override
+    public ArrayList<Coord> getBoundingBox() {
+        return layout.getEdgeValue(null);
+    }
+
+    @Override
+    public ColorProperty getColor() {
+        return colors;
+    }
+
+    @Override
+    public Color getNodeColor(INode n) {
+        return colors.getNodeValue(n);
+    }
+
+    @Override
+    public Color getEdgeColor(IEdge e) {
+        return colors.getEdgeValue(e);
+    }
+
+    @Override
+    public void setNodeColor(INode n, Color c) {
+        colors.setNodeValue(n,c);
+    }
+
+    @Override
+    public void setEdgeColor(IEdge e, Color c) {
+        colors.setEdgeValue(e,c);
+    }
+
+    @Override
+    public void setAllNodesColors(Color c) {
+        colors.setAllNodesValues(c);
+    }
+
+    @Override
+    public void setAllEdgesColors(Color c) {
+        colors.setAllEdgesValues(c);
+    }
+    // ALGORITHMES ///
+    @Override
+    public void welshAndPowell() {
         System.out.println("HelloWord");
     }
 
     @Override
-    public void setEdgeWidth(IEdge e, Double width){
-        System.out.println("HelloWord");
-    }
-    @Override
-    public void setAllNodesSizes(Size s){
+    public void sixColors() {
         System.out.println("HelloWord");
     }
 
     @Override
-    public void setAllEdgesWidths(Double width){
-        System.out.println("HelloWord");
-    }
-
-    @Override
-    public LayoutProperty getLayout(){
-        return new LayoutProperty();
-    }
-
-    @Override
-    public Coord getNodePosition(INode n){
-        return new Coord();
-    }
-
-    @Override
-    public ArrayList<Coord> getEdgePosition(IEdge e){
-        return new ArrayList<Coord>();
-    }
-
-    @Override
-    public void setNodePosition(INode n, Coord c){
-        System.out.println("HelloWord");
-
-    }
-
-    @Override
-    public void setEdgePosition(IEdge e, ArrayList<Coord> bends){
-        System.out.println("HelloWord");
-
-    }
-
-    @Override
-    public void setAllNodesPositions(Coord c){
-        System.out.println("HelloWord");
-    }
-
-    @Override
-    public void setAllEdgesPositions(ArrayList<Coord> bends){
-        System.out.println("HelloWord");
-    }
-
-    @Override
-    public ArrayList<Coord> getBoundingBox(){
-        return new ArrayList<Coord>();
-    }
-
-    @Override
-    public ColorProperty getColor(){
-        return new ColorProperty();
-    }
-
-    @Override
-    public Color getNodeColor(INode n){
-        return new Color();
-    }
-
-    @Override
-    public Color getEdgeColor(IEdge e){
-        return new Color();
-    }
-
-    @Override
-    public void setNodeColor(INode n, Color c){
-        System.out.println("HelloWord");
-    }
-    @Override
-    public void setEdgeColor(IEdge e, Color c){
-        System.out.println("HelloWord");
-    }
-
-    @Override
-    public void setAllNodesColors(Color c){
-        System.out.println("HelloWord");
-    }
-
-    @Override
-    public void setAllEdgesColors(Color c){
-        System.out.println("HelloWord");
-    }
-    @Override
-    public void welshAndPowell(){
-        System.out.println("HelloWord");
-    }
-    
-    @Override
-    public void sixColors(){
-        System.out.println("HelloWord");
-    }
-    
-    @Override 
-    public void fiveColors(){
+    public void fiveColors() {
         System.out.println("HelloWord");
     }
 }
-
