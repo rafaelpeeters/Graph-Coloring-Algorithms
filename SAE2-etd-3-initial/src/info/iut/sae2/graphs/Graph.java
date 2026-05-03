@@ -283,7 +283,23 @@ public class Graph implements IGraph {
     // A FAIRE
     @Override
     public ArrayList<Coord> getBoundingBox() {
-        return layout.getEdgeValue(null);
+        double xMin = getNodePosition(nodesList.get(0)).getX();
+        double yMin = getNodePosition(nodesList.get(0)).getY();;
+        double xMax = getNodePosition(nodesList.get(0)).getX();;
+        double yMax = getNodePosition(nodesList.get(0)).getY();;
+        
+        for (INode n : nodesList) {
+            Coord pos = getNodePosition(n);
+            if (pos.getX() < xMin) xMin = pos.getX();
+            if (pos.getY() < yMin) yMin = pos.getY();
+            if (pos.getX() > xMax) xMax = pos.getX();
+            if (pos.getY() > yMax) yMax = pos.getY();
+        }
+
+        ArrayList<Coord> res = new ArrayList<>();
+        res.add(new Coord(xMin, yMin));
+        res.add(new Coord(xMax, yMax));
+        return res;
     }
 
     @Override
