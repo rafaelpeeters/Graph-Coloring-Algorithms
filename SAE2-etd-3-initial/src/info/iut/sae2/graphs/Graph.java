@@ -1,20 +1,18 @@
 package info.iut.sae2.graphs;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import info.iut.sae2.properties.ColorProperty;
 import info.iut.sae2.properties.LayoutProperty;
 import info.iut.sae2.properties.SizeProperty;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Graph implements IGraph {
 
     private ArrayList<IEdge> edgesList;
     private ArrayList<INode> nodesList;
-    private SizeProperty sizes;
-    private LayoutProperty layout;
-    private ColorProperty colors;
+    private final SizeProperty sizes;
+    private final LayoutProperty layout;
+    private final ColorProperty colors;
 
     public Graph() {
         edgesList = new ArrayList<>();
@@ -85,10 +83,10 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getNeighbors(INode n) {
-        HashSet<INode> neighbors = new HashSet();
+        HashSet<INode> neighbors = new HashSet<>();
         neighbors.addAll(getSuccesors(n));
         neighbors.addAll(getPredecessors(n));
-        return new ArrayList(neighbors);
+        return new ArrayList<>(neighbors);
     }
 
     @Override
@@ -115,15 +113,15 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<IEdge> getInOutEdges(INode n) {
-        HashSet<IEdge> inOutEdges = new HashSet();
+        HashSet<IEdge> inOutEdges = new HashSet<>();
         inOutEdges.addAll(getInEdges(n));
         inOutEdges.addAll(getOutEdges(n));
-        return new ArrayList(inOutEdges);
+        return new ArrayList<>(inOutEdges);
     }
 
     @Override
     public ArrayList<IEdge> getInEdges(INode n) {
-        ArrayList<IEdge> inEdges = new ArrayList();
+        ArrayList<IEdge> inEdges = new ArrayList<>();
         for (IEdge e : edgesList) {
             if (e.target().equals(n)) {
                 inEdges.add(e);
@@ -280,13 +278,13 @@ public class Graph implements IGraph {
     public void setAllEdgesPositions(ArrayList<Coord> bends) {
         layout.setAllEdgesValues(bends);
     }
-    // A FAIRE
+    
     @Override
     public ArrayList<Coord> getBoundingBox() {
         double xMin = getNodePosition(nodesList.get(0)).getX();
-        double yMin = getNodePosition(nodesList.get(0)).getY();;
-        double xMax = getNodePosition(nodesList.get(0)).getX();;
-        double yMax = getNodePosition(nodesList.get(0)).getY();;
+        double yMin = getNodePosition(nodesList.get(0)).getY();
+        double xMax = getNodePosition(nodesList.get(0)).getX();
+        double yMax = getNodePosition(nodesList.get(0)).getY();
         
         for (INode n : nodesList) {
             Coord pos = getNodePosition(n);
@@ -296,10 +294,10 @@ public class Graph implements IGraph {
             if (pos.getY() > yMax) yMax = pos.getY();
         }
 
-        ArrayList<Coord> res = new ArrayList<>();
-        res.add(new Coord(xMin, yMin));
-        res.add(new Coord(xMax, yMax));
-        return res;
+        ArrayList<Coord> boundingBox = new ArrayList<>();
+        boundingBox.add(new Coord(xMin, yMin));
+        boundingBox.add(new Coord(xMax, yMax));
+        return boundingBox;
     }
 
     @Override
