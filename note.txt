@@ -1,0 +1,19 @@
+Welsh-Powel 
+a) Préparation
+	** copier le graphe **
+	1 donner le degré de chaque sommet
+	2 trier les sommet en fonction du degré du plus grand au plus petit degré ( voir les algo les plus efficasse )
+b) Algo
+	1 on color notre premier sommet ( celui avec le plus grand degré ) 
+	2 suivre la liste trié des sommet 
+		si le sommet n'est pas conecté a un autre sommet de cette meme couleur on le colore et on l'enléve de la liste
+		
+		/!\ a la fin de la liste une premiére couleur est defini dans le graphe
+		/!\ dans la liste il reste tout les sommet pas coloré
+		
+	3 on choisit un nouveau sommet a coloré ( le premier de la liste )
+		pareille
+	4 faire ca tant qu'il y a des sommet dans la liste
+	5 on obtient un graphe avec des sommet avec une couleur associer.
+
+
