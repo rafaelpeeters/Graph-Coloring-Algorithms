@@ -10,9 +10,9 @@ public class Edge implements IEdge{
         target = null;
     }
 
-    public Edge(INode source, INode target){
-        source = source;
-        target = target;
+    public Edge(INode theSource, INode theTarget){
+        source = theSource;
+        target = theTarget;
     }
 
     @Override
