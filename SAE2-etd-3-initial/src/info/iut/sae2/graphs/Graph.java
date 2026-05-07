@@ -30,8 +30,8 @@ public class Graph implements IGraph {
     @Override
     public IGraph copy() {
         Graph newGraph = new Graph();
-        newGraph.edgesList = edgesList;
-        newGraph.nodesList = nodesList;
+        newGraph.edgesList = new ArrayList<>(this.edgesList);
+        newGraph.nodesList = new ArrayList<>(this.nodesList);
         return newGraph;
     }
 
@@ -215,32 +215,46 @@ public class Graph implements IGraph {
 
     @Override
     public Size getNodeSize(INode n) {
-        return sizes.getNodeValue(n);
+        Size s = sizes.getNodeValue(n);
+        if (s == null) {
+            return SizeProperty.DEFAULT_NODE_SIZE;
+        }
+        return s;
     }
 
     @Override
     public Double getEdgeWidth(IEdge e) {
-        return sizes.getEdgeValue(e);
+        Double w = sizes.getEdgeValue(e);
+        if (w == null) {
+            return SizeProperty.DEFAULT_EDGE_WIDTH;
+        }
+        return w;
     }
 
     @Override
     public void setNodeSize(INode n, Size s) {
-        sizes.setNodeValue(n,s);
+        sizes.setNodeValue(n, s);
     }
 
     @Override
     public void setEdgeWidth(IEdge e, Double width) {
-        sizes.setEdgeValue(e,width);
+        sizes.setEdgeValue(e, width);
     }
-
+    
+    //REVOIR
     @Override
     public void setAllNodesSizes(Size s) {
-        sizes.setAllNodesValues(s);
+        for (INode n : nodesList) {
+            sizes.setNodeValue(n, s);
+        }
     }
-
+    
+    //REVOIR
     @Override
     public void setAllEdgesWidths(Double width) {
-        sizes.setAllEdgesValues(width);
+        for (IEdge e : edgesList) {
+            sizes.setEdgeValue(e, width);
+        }
     }
 
     @Override
@@ -250,12 +264,20 @@ public class Graph implements IGraph {
 
     @Override
     public Coord getNodePosition(INode n) {
-        return layout.getNodeValue(n);
+        Coord c = layout.getNodeValue(n);
+        if (c == null) {
+            return LayoutProperty.DEFAULT_NODE_POS;
+        }
+        return c;
     }
 
     @Override
     public ArrayList<Coord> getEdgePosition(IEdge e) {
-        return layout.getEdgeValue(e);
+        ArrayList<Coord> bends = layout.getEdgeValue(e);
+        if (bends == null) {
+            return new ArrayList<>();
+        }
+        return bends;
     }
 
     @Override
@@ -271,32 +293,39 @@ public class Graph implements IGraph {
 
     @Override
     public void setAllNodesPositions(Coord c) {
-        layout.setAllNodesValues(c);   
+        layout.setAllNodesValues(c);
     }
 
     @Override
     public void setAllEdgesPositions(ArrayList<Coord> bends) {
         layout.setAllEdgesValues(bends);
     }
-    
+
     @Override
     public ArrayList<Coord> getBoundingBox() {
-        double xMin = getNodePosition(nodesList.get(0)).getX();
-        double yMin = getNodePosition(nodesList.get(0)).getY();
-        double xMax = getNodePosition(nodesList.get(0)).getX();
-        double yMax = getNodePosition(nodesList.get(0)).getY();
-        
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+
         for (INode n : nodesList) {
             Coord pos = getNodePosition(n);
-            if (pos.getX() < xMin) xMin = pos.getX();
-            if (pos.getY() < yMin) yMin = pos.getY();
-            if (pos.getX() > xMax) xMax = pos.getX();
-            if (pos.getY() > yMax) yMax = pos.getY();
+            if (pos.getX() < minX) {
+                minX = pos.getX();
+            }
+            if (pos.getX() > maxX) {
+                maxX = pos.getX();
+            }
+            if (pos.getY() < minY) {
+                minY = pos.getY();
+            }
+            if (pos.getY() > maxY) {
+                maxY = pos.getY();
+            }
         }
-
         ArrayList<Coord> boundingBox = new ArrayList<>();
-        boundingBox.add(new Coord(xMin, yMin));
-        boundingBox.add(new Coord(xMax, yMax));
+        boundingBox.add(new Coord(minX-10, minY-10));
+        boundingBox.add(new Coord(maxX+10, maxY+10));
         return boundingBox;
     }
 
@@ -307,22 +336,30 @@ public class Graph implements IGraph {
 
     @Override
     public Color getNodeColor(INode n) {
-        return colors.getNodeValue(n);
+        Color c = colors.getNodeValue(n);
+        if (c == null) {
+            return ColorProperty.DEFAULT_NODE_COL;
+        }
+        return c;
     }
 
     @Override
     public Color getEdgeColor(IEdge e) {
-        return colors.getEdgeValue(e);
+        Color c = colors.getEdgeValue(e);
+        if (c == null) {
+            return ColorProperty.DEFAULT_EDGE_COL;
+        }
+        return c;
     }
 
     @Override
     public void setNodeColor(INode n, Color c) {
-        colors.setNodeValue(n,c);
+        colors.setNodeValue(n, c);
     }
 
     @Override
     public void setEdgeColor(IEdge e, Color c) {
-        colors.setEdgeValue(e,c);
+        colors.setEdgeValue(e, c);
     }
 
     @Override
@@ -334,6 +371,7 @@ public class Graph implements IGraph {
     public void setAllEdgesColors(Color c) {
         colors.setAllEdgesValues(c);
     }
+
     // ALGORITHMES ///
     @Override
     public void welshAndPowell() {

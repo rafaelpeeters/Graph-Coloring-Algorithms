@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package info.iut.sae2.graphs;
 
 import java.io.BufferedReader;
@@ -87,5 +83,32 @@ public class GraphLoader {
      * @param edgeFileName path to the file containing edges informations
      */
     private static void loadEdgesFromFile(IGraph g, HashMap<Integer, INode> nodeMap, String edgeFileName) {
+        Path pathToFile = Paths.get(edgeFileName);
+
+        try (BufferedReader br = Files.newBufferedReader(pathToFile,
+                StandardCharsets.US_ASCII)) {
+
+            String line = br.readLine();
+            while (line != null) {
+                String[] attributes = line.split(";");
+                if (attributes.length != 2) {
+                    System.err.println("Error while loading edges : " + attributes.length + " column(s)");
+                    continue;
+                }
+                int id1 = Integer.parseInt(attributes[0]);
+                int id2 = Integer.parseInt(attributes[1]);
+                INode n1 = nodeMap.get(id1);
+                INode n2 = nodeMap.get(id2);
+                if (n1 == null || n2 == null) {
+                    System.err.println("Error while loading edges : node id not found");
+                    continue;
+                }
+                g.addEdge(n1, n2);
+                line = br.readLine();
+            }
+
+        } catch (IOException ioe) {
+            System.err.println(ioe.getMessage());
+        }
     }
 }
