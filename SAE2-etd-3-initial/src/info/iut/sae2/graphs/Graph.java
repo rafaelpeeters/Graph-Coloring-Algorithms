@@ -4,22 +4,29 @@ import info.iut.sae2.properties.ColorProperty;
 import info.iut.sae2.properties.LayoutProperty;
 import info.iut.sae2.properties.SizeProperty;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Graph implements IGraph {
 
-    private ArrayList<IEdge> edgesList;
-    private ArrayList<INode> nodesList;
+    private HashSet<IEdge> edgesList;
+    private HashSet<INode> nodesList;
+    
+    private HashMap<INode, HashSet<IEdge>> outEdgesMap;
+    private HashMap<INode, HashSet<IEdge>> inEdgesMap;
+    
     private final SizeProperty sizes;
     private final LayoutProperty layout;
     private final ColorProperty colors;
 
     public Graph() {
-        edgesList = new ArrayList<>();
-        nodesList = new ArrayList<>();
+        edgesList = new HashSet<>();
+        nodesList = new HashSet<>();
         sizes = new SizeProperty();
         layout = new LayoutProperty();
         colors = new ColorProperty();
+        outEdgesMap = new HashMap<>();
+        inEdgesMap = new HashMap<>();
     }
 
     @Override
@@ -30,45 +37,81 @@ public class Graph implements IGraph {
     @Override
     public IGraph copy() {
         Graph newGraph = new Graph();
-        newGraph.edgesList = new ArrayList<>(this.edgesList);
-        newGraph.nodesList = new ArrayList<>(this.nodesList);
+        newGraph.edgesList = new HashSet<>(this.edgesList);
+        newGraph.nodesList = new HashSet<>(this.nodesList);
+        newGraph.outEdgesMap = new HashMap<>(this.outEdgesMap);
+        newGraph.inEdgesMap = new HashMap<>(this.inEdgesMap);
         return newGraph;
     }
 
     @Override
     public INode addNode() {
         INode newNode = new Node();
-        nodesList.add(newNode);
+        addNode(newNode);
         return newNode;
     }
 
     @Override
     public INode addNode(INode n) {
         nodesList.add(n);
+        if (!outEdgesMap.containsKey(n)) {
+            outEdgesMap.put(n, new HashSet<>());
+        }
+        if (!inEdgesMap.containsKey(n)) {
+            inEdgesMap.put(n, new HashSet<>());
+        }
+
         return n;
     }
 
-    @Override
+
+@Override
     public IEdge addEdge(IEdge e) {
         edgesList.add(e);
+        INode src = e.source();
+        HashSet<IEdge> edgeListOfTheNode = outEdgesMap.get(src);
+        if (edgeListOfTheNode == null) {
+            edgeListOfTheNode = new HashSet<>();
+            outEdgesMap.put(src, edgeListOfTheNode);
+        }
+        edgeListOfTheNode.add(e);
+        INode tgt = e.target();
+        edgeListOfTheNode = inEdgesMap.get(tgt);
+
+        if (edgeListOfTheNode == null) {
+            edgeListOfTheNode = new HashSet<>();
+            inEdgesMap.put(tgt, edgeListOfTheNode);
+        }
+        edgeListOfTheNode.add(e);
         return e;
     }
 
     @Override
     public IEdge addEdge(INode src, INode tgt) {
         IEdge newEdge = new Edge(src, tgt);
-        edgesList.add(newEdge);
-        return newEdge;
+        return addEdge(newEdge);
     }
 
     @Override
     public void delNode(INode n) {
-        nodesList.remove(n);
+        if (nodesList.contains(n)){
+            ArrayList<IEdge> edges = getInOutEdges(n);
+            for (IEdge e : edges) {
+                delEdge(e);
+            }
+            nodesList.remove(n);
+            outEdgesMap.remove(n);
+            inEdgesMap.remove(n);
+        }
     }
 
-    @Override
+@Override
     public void delEdge(IEdge e) {
-        edgesList.remove(e);
+        if (edgesList.contains(e)) {
+            edgesList.remove(e);
+            outEdgesMap.get(e.source()).remove(e);
+            inEdgesMap.get(e.target()).remove(e);
+        }
     }
 
     @Override
@@ -91,24 +134,20 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getSuccesors(INode n) {
-        ArrayList<INode> successors = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.source().equals(n)) {
-                successors.add(e.target());
-            }
+        HashSet<INode> successors = new HashSet<>();
+        for (IEdge e : getOutEdges(n)) {
+            successors.add(e.target());
         }
-        return successors;
+        return new ArrayList<>(successors);
     }
 
     @Override
     public ArrayList<INode> getPredecessors(INode n) {
-        ArrayList<INode> predecessors = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.target().equals(n)) {
-                predecessors.add(e.source());
-            }
+        HashSet<INode> predecessors = new HashSet<>();
+        for (IEdge e : getInEdges(n)) {
+            predecessors.add(e.source());
         }
-        return predecessors;
+        return new ArrayList<>(predecessors);
     }
 
     @Override
@@ -121,34 +160,25 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<IEdge> getInEdges(INode n) {
-        ArrayList<IEdge> inEdges = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.target().equals(n)) {
-                inEdges.add(e);
-            }
-        }
-        return inEdges;
+        HashSet<IEdge> findEdge = inEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
     }
+    
 
     @Override
     public ArrayList<IEdge> getOutEdges(INode n) {
-        ArrayList<IEdge> outEdges = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.source().equals(n)) {
-                outEdges.add(e);
-            }
-        }
-        return outEdges;
+        HashSet<IEdge> findEdge = outEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
     }
 
     @Override
     public ArrayList<INode> getNodes() {
-        return nodesList;
+        return new ArrayList<>(nodesList);
     }
 
     @Override
     public ArrayList<IEdge> getEdges() {
-        return edgesList;
+        return new ArrayList<>(edgesList);
     }
 
     @Override
@@ -178,34 +208,22 @@ public class Graph implements IGraph {
 
     @Override
     public boolean existEdge(INode src, INode tgt, boolean oriented) {
-        boolean trouve = false;
-        int i = 0;
-        while (!trouve && i < edgesList.size()) {
-            IEdge e = edgesList.get(i);
-            if (oriented && e.source().equals(src) && e.target().equals(tgt)) {
-                trouve = true;
-            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
-                trouve = true;
-            }
-            i++;
-        }
-        return trouve;
+        return getEdge(src, tgt, oriented) != null;
     }
 
     @Override
     public IEdge getEdge(INode src, INode tgt, boolean oriented) {
-        IEdge edge = null;
-        int i = 0;
-        while (edge == null && i < edgesList.size()) {
-            IEdge e = edgesList.get(i);
-            if (e.source().equals(src) && e.target().equals(tgt)) {
-                edge = e;
-            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
-                edge = e;
+        if (outEdgesMap.containsKey(src)) {
+            for (IEdge e : outEdgesMap.get(src)) {
+                if (e.target().equals(tgt)) return e;
             }
-            i++;
         }
-        return edge;
+        if (!oriented && outEdgesMap.containsKey(tgt)) {
+            for (IEdge e : outEdgesMap.get(tgt)) {
+                if (e.target().equals(src)) return e;
+            }
+        }
+        return null;
     }
 
     @Override
