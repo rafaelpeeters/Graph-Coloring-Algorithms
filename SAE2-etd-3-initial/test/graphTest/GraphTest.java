@@ -7,6 +7,7 @@ import info.iut.sae2.graphs.INode;
 import info.iut.sae2.graphs.IEdge;
 import info.iut.sae2.graphs.Edge;
 import info.iut.sae2.graphs.Coord;
+import java.util.ArrayList;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -66,6 +67,81 @@ public class GraphTest {
         g.delEdge(e1);
         assertEquals(0, g.numberOfEdges());
         assertFalse(g.getEdges().contains(e1));
+    }
+    
+    @Test
+    public void testDelNodeRemovesAssociatedEdges() {
+        IGraph g = new Graph();
+        INode n1 = g.addNode();
+        INode n2 = g.addNode();
+        
+        IEdge e = g.addEdge(n1, n2);
+        assertEquals(1, g.numberOfEdges());
+        
+        // Supprimer un nœud doit supprimer l'arête qui y est attachée
+        g.delNode(n1);
+        
+        assertEquals(1, g.numberOfNodes());
+        assertEquals(0, g.numberOfEdges());
+        assertFalse(g.getEdges().contains(e));
+    }
+
+    @Test
+    public void testSuccessorsAndPredecessors() {
+        IGraph g = new Graph();
+        INode n1 = g.addNode();
+        INode n2 = g.addNode();
+        INode n3 = g.addNode();
+        
+        g.addEdge(n1, n2); 
+        g.addEdge(n2, n3); 
+
+        ArrayList<INode> succN2 = g.getSuccesors(n2);
+        assertEquals(1, succN2.size());
+        assertTrue(succN2.contains(n3));
+
+        ArrayList<INode> predN2 = g.getPredecessors(n2);
+        assertEquals(1, predN2.size());
+        assertTrue(predN2.contains(n1));
+
+        ArrayList<INode> neighbors = g.getNeighbors(n2);
+        assertEquals(2, neighbors.size());
+        assertTrue(neighbors.contains(n1));
+        assertTrue(neighbors.contains(n3));
+    }
+
+    @Test
+    public void testDegrees() {
+        IGraph g = new Graph();
+        INode n1 = g.addNode();
+        INode n2 = g.addNode();
+        INode n3 = g.addNode();
+        
+        g.addEdge(n1, n2);
+        g.addEdge(n2, n3);
+        
+        assertEquals(1, g.inDegree(n2)); 
+        assertEquals(1, g.outDegree(n2));
+        assertEquals(2, g.degree(n2));   
+    }
+
+    @Test
+    public void testExistAndGetEdge() {
+        IGraph g = new Graph();
+        INode n1 = g.addNode();
+        INode n2 = g.addNode();
+        
+        IEdge e = g.addEdge(n1, n2);
+        
+        // Tests orientés
+        assertTrue(g.existEdge(n1, n2, true));
+        assertFalse(g.existEdge(n2, n1, true)); 
+        assertEquals(e, g.getEdge(n1, n2, true));
+        assertNull(g.getEdge(n2, n1, true));
+        // Tests non-orientés
+        assertTrue(g.existEdge(n1, n2, false));
+        assertTrue(g.existEdge(n2, n1, false)); 
+        assertEquals(e, g.getEdge(n2, n1, false));
     }
 
    
