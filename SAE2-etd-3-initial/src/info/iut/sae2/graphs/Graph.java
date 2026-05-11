@@ -4,22 +4,29 @@ import info.iut.sae2.properties.ColorProperty;
 import info.iut.sae2.properties.LayoutProperty;
 import info.iut.sae2.properties.SizeProperty;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class Graph implements IGraph {
 
-    private ArrayList<IEdge> edgesList;
-    private ArrayList<INode> nodesList;
+    private HashSet<IEdge> edgesList;
+    private HashSet<INode> nodesList;
+    
+    private HashMap<INode, HashSet<IEdge>> outEdgesMap;
+    private HashMap<INode, HashSet<IEdge>> inEdgesMap;
+    
     private final SizeProperty sizes;
     private final LayoutProperty layout;
     private final ColorProperty colors;
 
     public Graph() {
-        edgesList = new ArrayList<>();
-        nodesList = new ArrayList<>();
+        edgesList = new HashSet<>();
+        nodesList = new HashSet<>();
         sizes = new SizeProperty();
         layout = new LayoutProperty();
         colors = new ColorProperty();
+        outEdgesMap = new HashMap<>();
+        inEdgesMap = new HashMap<>();
     }
 
     @Override
@@ -30,45 +37,81 @@ public class Graph implements IGraph {
     @Override
     public IGraph copy() {
         Graph newGraph = new Graph();
-        newGraph.edgesList = edgesList;
-        newGraph.nodesList = nodesList;
+        newGraph.edgesList = new HashSet<>(this.edgesList);
+        newGraph.nodesList = new HashSet<>(this.nodesList);
+        newGraph.outEdgesMap = new HashMap<>(this.outEdgesMap);
+        newGraph.inEdgesMap = new HashMap<>(this.inEdgesMap);
         return newGraph;
     }
 
     @Override
     public INode addNode() {
         INode newNode = new Node();
-        nodesList.add(newNode);
+        addNode(newNode);
         return newNode;
     }
 
     @Override
     public INode addNode(INode n) {
         nodesList.add(n);
+        if (!outEdgesMap.containsKey(n)) {
+            outEdgesMap.put(n, new HashSet<>());
+        }
+        if (!inEdgesMap.containsKey(n)) {
+            inEdgesMap.put(n, new HashSet<>());
+        }
+
         return n;
     }
 
-    @Override
+
+@Override
     public IEdge addEdge(IEdge e) {
         edgesList.add(e);
+        INode src = e.source();
+        HashSet<IEdge> edgeListOfTheNode = outEdgesMap.get(src);
+        if (edgeListOfTheNode == null) {
+            edgeListOfTheNode = new HashSet<>();
+            outEdgesMap.put(src, edgeListOfTheNode);
+        }
+        edgeListOfTheNode.add(e);
+        INode tgt = e.target();
+        edgeListOfTheNode = inEdgesMap.get(tgt);
+
+        if (edgeListOfTheNode == null) {
+            edgeListOfTheNode = new HashSet<>();
+            inEdgesMap.put(tgt, edgeListOfTheNode);
+        }
+        edgeListOfTheNode.add(e);
         return e;
     }
 
     @Override
     public IEdge addEdge(INode src, INode tgt) {
         IEdge newEdge = new Edge(src, tgt);
-        edgesList.add(newEdge);
-        return newEdge;
+        return addEdge(newEdge);
     }
 
     @Override
     public void delNode(INode n) {
-        nodesList.remove(n);
+        if (nodesList.contains(n)){
+            ArrayList<IEdge> edges = getInOutEdges(n);
+            for (IEdge e : edges) {
+                delEdge(e);
+            }
+            nodesList.remove(n);
+            outEdgesMap.remove(n);
+            inEdgesMap.remove(n);
+        }
     }
 
-    @Override
+@Override
     public void delEdge(IEdge e) {
-        edgesList.remove(e);
+        if (edgesList.contains(e)) {
+            edgesList.remove(e);
+            outEdgesMap.get(e.source()).remove(e);
+            inEdgesMap.get(e.target()).remove(e);
+        }
     }
 
     @Override
@@ -91,24 +134,20 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getSuccesors(INode n) {
-        ArrayList<INode> successors = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.source().equals(n)) {
-                successors.add(e.target());
-            }
+        HashSet<INode> successors = new HashSet<>();
+        for (IEdge e : getOutEdges(n)) {
+            successors.add(e.target());
         }
-        return successors;
+        return new ArrayList<>(successors);
     }
 
     @Override
     public ArrayList<INode> getPredecessors(INode n) {
-        ArrayList<INode> predecessors = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.target().equals(n)) {
-                predecessors.add(e.source());
-            }
+        HashSet<INode> predecessors = new HashSet<>();
+        for (IEdge e : getInEdges(n)) {
+            predecessors.add(e.source());
         }
-        return predecessors;
+        return new ArrayList<>(predecessors);
     }
 
     @Override
@@ -121,34 +160,25 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<IEdge> getInEdges(INode n) {
-        ArrayList<IEdge> inEdges = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.target().equals(n)) {
-                inEdges.add(e);
-            }
-        }
-        return inEdges;
+        HashSet<IEdge> findEdge = inEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
     }
+    
 
     @Override
     public ArrayList<IEdge> getOutEdges(INode n) {
-        ArrayList<IEdge> outEdges = new ArrayList<>();
-        for (IEdge e : edgesList) {
-            if (e.source().equals(n)) {
-                outEdges.add(e);
-            }
-        }
-        return outEdges;
+        HashSet<IEdge> findEdge = outEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
     }
 
     @Override
     public ArrayList<INode> getNodes() {
-        return nodesList;
+        return new ArrayList<>(nodesList);
     }
 
     @Override
     public ArrayList<IEdge> getEdges() {
-        return edgesList;
+        return new ArrayList<>(edgesList);
     }
 
     @Override
@@ -178,34 +208,22 @@ public class Graph implements IGraph {
 
     @Override
     public boolean existEdge(INode src, INode tgt, boolean oriented) {
-        boolean trouve = false;
-        int i = 0;
-        while (!trouve && i < edgesList.size()) {
-            IEdge e = edgesList.get(i);
-            if (oriented && e.source().equals(src) && e.target().equals(tgt)) {
-                trouve = true;
-            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
-                trouve = true;
-            }
-            i++;
-        }
-        return trouve;
+        return getEdge(src, tgt, oriented) != null;
     }
 
     @Override
     public IEdge getEdge(INode src, INode tgt, boolean oriented) {
-        IEdge edge = null;
-        int i = 0;
-        while (edge == null && i < edgesList.size()) {
-            IEdge e = edgesList.get(i);
-            if (e.source().equals(src) && e.target().equals(tgt)) {
-                edge = e;
-            } else if (!oriented && e.source().equals(tgt) && e.target().equals(src)) {
-                edge = e;
+        if (outEdgesMap.containsKey(src)) {
+            for (IEdge e : outEdgesMap.get(src)) {
+                if (e.target().equals(tgt)) return e;
             }
-            i++;
         }
-        return edge;
+        if (!oriented && outEdgesMap.containsKey(tgt)) {
+            for (IEdge e : outEdgesMap.get(tgt)) {
+                if (e.target().equals(src)) return e;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -215,32 +233,46 @@ public class Graph implements IGraph {
 
     @Override
     public Size getNodeSize(INode n) {
-        return sizes.getNodeValue(n);
+        Size s = sizes.getNodeValue(n);
+        if (s == null) {
+            return SizeProperty.DEFAULT_NODE_SIZE;
+        }
+        return s;
     }
 
     @Override
     public Double getEdgeWidth(IEdge e) {
-        return sizes.getEdgeValue(e);
+        Double w = sizes.getEdgeValue(e);
+        if (w == null) {
+            return SizeProperty.DEFAULT_EDGE_WIDTH;
+        }
+        return w;
     }
 
     @Override
     public void setNodeSize(INode n, Size s) {
-        sizes.setNodeValue(n,s);
+        sizes.setNodeValue(n, s);
     }
 
     @Override
     public void setEdgeWidth(IEdge e, Double width) {
-        sizes.setEdgeValue(e,width);
+        sizes.setEdgeValue(e, width);
     }
-
+    
+    //REVOIR
     @Override
     public void setAllNodesSizes(Size s) {
-        sizes.setAllNodesValues(s);
+        for (INode n : nodesList) {
+            sizes.setNodeValue(n, s);
+        }
     }
-
+    
+    //REVOIR
     @Override
     public void setAllEdgesWidths(Double width) {
-        sizes.setAllEdgesValues(width);
+        for (IEdge e : edgesList) {
+            sizes.setEdgeValue(e, width);
+        }
     }
 
     @Override
@@ -250,12 +282,20 @@ public class Graph implements IGraph {
 
     @Override
     public Coord getNodePosition(INode n) {
-        return layout.getNodeValue(n);
+        Coord c = layout.getNodeValue(n);
+        if (c == null) {
+            return LayoutProperty.DEFAULT_NODE_POS;
+        }
+        return c;
     }
 
     @Override
     public ArrayList<Coord> getEdgePosition(IEdge e) {
-        return layout.getEdgeValue(e);
+        ArrayList<Coord> bends = layout.getEdgeValue(e);
+        if (bends == null) {
+            return new ArrayList<>();
+        }
+        return bends;
     }
 
     @Override
@@ -271,32 +311,39 @@ public class Graph implements IGraph {
 
     @Override
     public void setAllNodesPositions(Coord c) {
-        layout.setAllNodesValues(c);   
+        layout.setAllNodesValues(c);
     }
 
     @Override
     public void setAllEdgesPositions(ArrayList<Coord> bends) {
         layout.setAllEdgesValues(bends);
     }
-    
+
     @Override
     public ArrayList<Coord> getBoundingBox() {
-        double xMin = getNodePosition(nodesList.get(0)).getX();
-        double yMin = getNodePosition(nodesList.get(0)).getY();
-        double xMax = getNodePosition(nodesList.get(0)).getX();
-        double yMax = getNodePosition(nodesList.get(0)).getY();
-        
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+
         for (INode n : nodesList) {
             Coord pos = getNodePosition(n);
-            if (pos.getX() < xMin) xMin = pos.getX();
-            if (pos.getY() < yMin) yMin = pos.getY();
-            if (pos.getX() > xMax) xMax = pos.getX();
-            if (pos.getY() > yMax) yMax = pos.getY();
+            if (pos.getX() < minX) {
+                minX = pos.getX();
+            }
+            if (pos.getX() > maxX) {
+                maxX = pos.getX();
+            }
+            if (pos.getY() < minY) {
+                minY = pos.getY();
+            }
+            if (pos.getY() > maxY) {
+                maxY = pos.getY();
+            }
         }
-
         ArrayList<Coord> boundingBox = new ArrayList<>();
-        boundingBox.add(new Coord(xMin, yMin));
-        boundingBox.add(new Coord(xMax, yMax));
+        boundingBox.add(new Coord(minX-10, minY-10));
+        boundingBox.add(new Coord(maxX+10, maxY+10));
         return boundingBox;
     }
 
@@ -307,22 +354,30 @@ public class Graph implements IGraph {
 
     @Override
     public Color getNodeColor(INode n) {
-        return colors.getNodeValue(n);
+        Color c = colors.getNodeValue(n);
+        if (c == null) {
+            return ColorProperty.DEFAULT_NODE_COL;
+        }
+        return c;
     }
 
     @Override
     public Color getEdgeColor(IEdge e) {
-        return colors.getEdgeValue(e);
+        Color c = colors.getEdgeValue(e);
+        if (c == null) {
+            return ColorProperty.DEFAULT_EDGE_COL;
+        }
+        return c;
     }
 
     @Override
     public void setNodeColor(INode n, Color c) {
-        colors.setNodeValue(n,c);
+        colors.setNodeValue(n, c);
     }
 
     @Override
     public void setEdgeColor(IEdge e, Color c) {
-        colors.setEdgeValue(e,c);
+        colors.setEdgeValue(e, c);
     }
 
     @Override
@@ -334,6 +389,7 @@ public class Graph implements IGraph {
     public void setAllEdgesColors(Color c) {
         colors.setAllEdgesValues(c);
     }
+
     // ALGORITHMES ///
     @Override
     public void welshAndPowell() {
