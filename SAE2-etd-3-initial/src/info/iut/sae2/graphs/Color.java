@@ -94,7 +94,7 @@ public class Color {
      * @param g the green channnel
      */
     public void setG(int g){
-        this.g = b;
+        this.g = g;
     }
     
     /**

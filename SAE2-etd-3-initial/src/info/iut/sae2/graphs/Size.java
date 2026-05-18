@@ -65,7 +65,7 @@ public class Size {
      *
      * @param w the new width of the size
      */
-    public void setW(int w) {
+    public void setW(double w) {
         this.w = w;
     }
 
@@ -74,7 +74,7 @@ public class Size {
      *
      * @param h the new height of the size
      */
-    public void setH(int h) {
+    public void setH(double h) {
         this.h = h;
     }
 
