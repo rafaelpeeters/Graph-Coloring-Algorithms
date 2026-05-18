@@ -1,4 +1,4 @@
-Welsh-Powel 
+Welsh-Powell  
 a) Préparation
 	** copier le graphe **
 	1 donner le degré de chaque sommet
