@@ -9,30 +9,19 @@ import java.util.Map;
 
 public class WelshAndPowell implements Algorithm<ColorProperty> {
 
-    private static final Color[] PALETTE = {
-        new Color(255, 0, 0, 255), // Rouge
-        new Color(0, 0, 255, 255), // Bleu
-        new Color(0, 255, 0, 255), // Vert
-        new Color(255, 255, 0, 255), // Jaune
-        new Color(255, 165, 0, 255), // Orange
-        new Color(128, 0, 128, 255), // Violet
-        new Color(0, 255, 255, 255), // Cyan
-        new Color(255, 0, 255, 255), // Magenta
-        new Color(255, 192, 203, 255),// Rose
-        new Color(139, 69, 19, 255) // Marron
-    };
-
     @Override
     public ColorProperty apply(IGraph g, Map<String, Object> parameters) {
         ColorProperty resultColorProperty = new ColorProperty();
+        Color[] palette = resultColorProperty.getPalette();
         ArrayList<INode> nodes = g.getNodes();
         if (nodes.isEmpty()) {
             return resultColorProperty;
         }
-        SortNodes.sort(g, nodes);
+        SortNodes sortTool = new SortNodes(g);
+        nodes.sort(sortTool);
         int colorIndex = 0;
         while (!nodes.isEmpty()) {
-            Color currentColor = PALETTE[colorIndex];
+            Color currentColor = palette[colorIndex];
             ArrayList<INode> coloredInThisPass = new ArrayList<>();
             ArrayList<INode> toRemove = new ArrayList<>();
             for (INode current : nodes) {
@@ -54,7 +43,7 @@ public class WelshAndPowell implements Algorithm<ColorProperty> {
             }
             nodes.removeAll(toRemove);
             colorIndex++;
-            if (colorIndex == PALETTE.length) {
+            if (colorIndex == palette.length) {
                 colorIndex = 0;
             }
         }
