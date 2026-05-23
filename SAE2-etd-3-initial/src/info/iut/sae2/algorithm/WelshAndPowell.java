@@ -16,9 +16,8 @@ public class WelshAndPowell implements Algorithm<ColorProperty> {
         ArrayList<INode> nodes = g.getNodes();
         if (nodes.isEmpty()) {
             return resultColorProperty;
-        }
-        SortNodes sortTool = new SortNodes(g);
-        nodes.sort(sortTool);
+        }  
+        nodes.sort((node1, node2) -> g.degree(node2) - g.degree(node1));
         int colorIndex = 0;
         while (!nodes.isEmpty()) {
             Color currentColor = palette[colorIndex];
