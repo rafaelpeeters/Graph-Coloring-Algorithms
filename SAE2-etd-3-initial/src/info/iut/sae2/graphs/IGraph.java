@@ -108,7 +108,7 @@ public interface IGraph {
      * @param n the node whose successors are queried
      * @return the successors of the node
      */
-    public ArrayList<INode> getSuccesors(INode n);
+    public ArrayList<INode> getSuccessors(INode n);
 
     /**
      * Returns the predecessors of a given node in the graph

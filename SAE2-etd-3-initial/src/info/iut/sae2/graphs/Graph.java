@@ -146,13 +146,13 @@ public class Graph implements IGraph {
     @Override
     public ArrayList<INode> getNeighbors(INode n) {
         HashSet<INode> neighbors = new HashSet<>();
-        neighbors.addAll(getSuccesors(n));
+        neighbors.addAll(getSuccessors(n));
         neighbors.addAll(getPredecessors(n));
         return new ArrayList<>(neighbors);
     }
 
     @Override
-    public ArrayList<INode> getSuccesors(INode n) {
+    public ArrayList<INode> getSuccessors(INode n) {
         checkContainsNode(n);
         HashSet<INode> successors = new HashSet<>();
         for (IEdge e : getOutEdges(n)) {
@@ -216,17 +216,19 @@ public class Graph implements IGraph {
 
     @Override
     public int inDegree(INode n) {
-        return getInEdges(n).size();
+        checkContainsNode(n);
+        return inEdgesMap.get(n).size();
     }
 
     @Override
     public int outDegree(INode n) {
-        return getOutEdges(n).size();
+        checkContainsNode(n);
+        return outEdgesMap.get(n).size();
     }
 
     @Override
     public int degree(INode n) {
-        return getInOutEdges(n).size();
+        return inDegree(n) + outDegree(n);
     }
 
     @Override
