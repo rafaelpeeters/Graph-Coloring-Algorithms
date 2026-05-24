@@ -12,6 +12,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+
+/**
+ * Implementation of the Igraph interface.
+ * We specifically referred to:
+ * https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html
+ * @author carpentier, peeters
+ */
 public class Graph implements IGraph {
 
     private HashSet<IEdge> edgesList;
@@ -39,19 +46,23 @@ public class Graph implements IGraph {
         return new Graph();
     }
 
-   @Override
+
+    @Override
     public IGraph copy() {
         Graph newGraph = new Graph();
         newGraph.nodesList = new HashSet<>(this.nodesList);
         newGraph.edgesList = new HashSet<>(this.edgesList);
+
         for (INode n : this.outEdgesMap.keySet()) {
             HashSet<IEdge> originalEdges = this.outEdgesMap.get(n);
             newGraph.outEdgesMap.put(n, new HashSet<>(originalEdges));
         }
+
         for (INode n : this.inEdgesMap.keySet()) {
             HashSet<IEdge> originalEdges = this.inEdgesMap.get(n);
             newGraph.inEdgesMap.put(n, new HashSet<>(originalEdges));
         }
+        
         return newGraph;
     }
 
@@ -64,6 +75,9 @@ public class Graph implements IGraph {
 
     @Override
     public INode addNode(INode n) {
+        if (n == null) {
+            throw new IllegalArgumentException("Impossible d'ajouter un nœud null au graphe.");
+        }
         nodesList.add(n);
         if (!outEdgesMap.containsKey(n)) {
             outEdgesMap.put(n, new HashSet<>());
@@ -77,8 +91,13 @@ public class Graph implements IGraph {
 
     @Override
     public IEdge addEdge(IEdge e) {
+
+        if (e == null || e.source() == null || e.target() == null) {
+            throw new IllegalArgumentException("L'arête ou ses nœuds ne peuvent pas être null.");
+        }
         addNode(e.source());
         addNode(e.target());
+ 
         edgesList.add(e);
         outEdgesMap.get(e.source()).add(e);
         inEdgesMap.get(e.target()).add(e);
@@ -134,6 +153,7 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getSuccesors(INode n) {
+        checkContainsNode(n);
         HashSet<INode> successors = new HashSet<>();
         for (IEdge e : getOutEdges(n)) {
             successors.add(e.target());
@@ -143,6 +163,7 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getPredecessors(INode n) {
+        checkContainsNode(n);
         HashSet<INode> predecessors = new HashSet<>();
         for (IEdge e : getInEdges(n)) {
             predecessors.add(e.source());
@@ -160,20 +181,17 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<IEdge> getInEdges(INode n) {
-        HashSet<IEdge> inEdges = inEdgesMap.get(n);
-        if (inEdges == null) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(inEdges);
+        checkContainsNode(n);
+        HashSet<IEdge> findEdge = inEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
     }
 
     @Override
     public ArrayList<IEdge> getOutEdges(INode n) {
-        HashSet<IEdge> outEdges = outEdgesMap.get(n);
-        if (outEdges == null) {
-            return new ArrayList<>();
-        }
-        return new ArrayList<>(outEdges);
+        checkContainsNode(n);
+        HashSet<IEdge> findEdge = outEdgesMap.get(n);
+        return new ArrayList<>(findEdge);
+
     }
 
     @Override
@@ -218,6 +236,8 @@ public class Graph implements IGraph {
 
     @Override
     public IEdge getEdge(INode src, INode tgt, boolean oriented) {
+        checkContainsNode(src); 
+        checkContainsNode(tgt);
         if (outEdgesMap.containsKey(src)) {
             for (IEdge e : outEdgesMap.get(src)) {
                 if (e.target().equals(tgt)) {
@@ -242,6 +262,7 @@ public class Graph implements IGraph {
 
     @Override
     public Size getNodeSize(INode n) {
+        checkContainsNode(n);
         Size s = sizes.getNodeValue(n);
         if (s == null) {
             return SizeProperty.DEFAULT_NODE_SIZE;
@@ -251,6 +272,7 @@ public class Graph implements IGraph {
 
     @Override
     public Double getEdgeWidth(IEdge e) {
+        checkContainsEdge(e);
         Double w = sizes.getEdgeValue(e);
         if (w == null) {
             return SizeProperty.DEFAULT_EDGE_WIDTH;
@@ -260,11 +282,13 @@ public class Graph implements IGraph {
 
     @Override
     public void setNodeSize(INode n, Size s) {
+        checkContainsNode(n);
         sizes.setNodeValue(n, s);
     }
 
     @Override
     public void setEdgeWidth(IEdge e, Double width) {
+        checkContainsEdge(e);
         sizes.setEdgeValue(e, width);
     }
 
@@ -291,6 +315,7 @@ public class Graph implements IGraph {
 
     @Override
     public Coord getNodePosition(INode n) {
+        checkContainsNode(n);
         Coord c = layout.getNodeValue(n);
         if (c == null) {
             return LayoutProperty.DEFAULT_NODE_POS;
@@ -300,6 +325,7 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<Coord> getEdgePosition(IEdge e) {
+        checkContainsEdge(e);
         ArrayList<Coord> bends = layout.getEdgeValue(e);
         if (bends == null) {
             return new ArrayList<>();
@@ -309,12 +335,14 @@ public class Graph implements IGraph {
 
     @Override
     public void setNodePosition(INode n, Coord c) {
+        checkContainsNode(n);
         layout.setNodeValue(n, c);
 
     }
 
     @Override
     public void setEdgePosition(IEdge e, ArrayList<Coord> bends) {
+        checkContainsEdge(e);
         layout.setEdgeValue(e, bends);
     }
 
@@ -330,6 +358,9 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<Coord> getBoundingBox() {
+        if (nodesList.isEmpty()) {
+            throw new IllegalStateException("Impossible de calculer la Bounding Box : le graphe est vide.");
+        }
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
@@ -362,6 +393,7 @@ public class Graph implements IGraph {
 
     @Override
     public Color getNodeColor(INode n) {
+        checkContainsNode(n);
         Color c = colors.getNodeValue(n);
         if (c == null) {
             return ColorProperty.DEFAULT_NODE_COL;
@@ -371,6 +403,7 @@ public class Graph implements IGraph {
 
     @Override
     public Color getEdgeColor(IEdge e) {
+        checkContainsEdge(e);
         Color c = colors.getEdgeValue(e);
         if (c == null) {
             return ColorProperty.DEFAULT_EDGE_COL;
@@ -380,11 +413,13 @@ public class Graph implements IGraph {
 
     @Override
     public void setNodeColor(INode n, Color c) {
+        checkContainsNode(n);
         colors.setNodeValue(n, c);
     }
 
     @Override
     public void setEdgeColor(IEdge e, Color c) {
+        checkContainsEdge(e);
         colors.setEdgeValue(e, c);
     }
 
@@ -433,4 +468,16 @@ public class Graph implements IGraph {
             }
         }
     }
+    
+    private void checkContainsNode(INode n) {
+        if (n == null || !nodesList.contains(n)) {
+        throw new IllegalArgumentException("Le nœud n'appartient pas à ce graphe.");
+        }
+    }
+    private void checkContainsEdge(IEdge e) {
+        if (e == null || !edgesList.contains(e)) {
+        throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
+        }
+    }
 }
+
