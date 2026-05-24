@@ -103,7 +103,7 @@ public class GraphTest {
         g.addEdge(n1, n2); 
         g.addEdge(n2, n3); 
 
-        ArrayList<INode> succN2 = g.getSuccesors(n2);
+        ArrayList<INode> succN2 = g.getSuccessors(n2);
         assertEquals(1, succN2.size());
         assertTrue(succN2.contains(n3));
 

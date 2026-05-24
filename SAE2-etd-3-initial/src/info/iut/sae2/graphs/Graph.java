@@ -146,13 +146,13 @@ public class Graph implements IGraph {
     @Override
     public ArrayList<INode> getNeighbors(INode n) {
         HashSet<INode> neighbors = new HashSet<>();
-        neighbors.addAll(getSuccesors(n));
+        neighbors.addAll(getSuccessors(n));
         neighbors.addAll(getPredecessors(n));
         return new ArrayList<>(neighbors);
     }
 
     @Override
-    public ArrayList<INode> getSuccesors(INode n) {
+    public ArrayList<INode> getSuccessors(INode n) {
         checkContainsNode(n);
         HashSet<INode> successors = new HashSet<>();
         for (IEdge e : getOutEdges(n)) {
@@ -479,5 +479,6 @@ public class Graph implements IGraph {
         throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
         }
     }
+    
 }
 
