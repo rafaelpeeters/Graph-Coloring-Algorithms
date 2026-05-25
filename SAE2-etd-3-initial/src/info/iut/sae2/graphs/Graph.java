@@ -21,8 +21,8 @@ import java.util.HashSet;
  */
 public class Graph implements IGraph {
 
-    private HashSet<IEdge> edgesList;
-    private HashSet<INode> nodesList;
+    private HashSet<IEdge> edgesSet;
+    private HashSet<INode> nodesSet;
 
     private final HashMap<INode, HashSet<IEdge>> outEdgesMap;
     private final HashMap<INode, HashSet<IEdge>> inEdgesMap;
@@ -32,8 +32,8 @@ public class Graph implements IGraph {
     private final ColorProperty colors;
 
     public Graph() {
-        edgesList = new HashSet<>();
-        nodesList = new HashSet<>();
+        edgesSet = new HashSet<>();
+        nodesSet = new HashSet<>();
         sizes = new SizeProperty();
         layout = new LayoutProperty();
         colors = new ColorProperty();
@@ -48,23 +48,57 @@ public class Graph implements IGraph {
 
 
     @Override
-    public IGraph copy() {
-        Graph newGraph = new Graph();
-        newGraph.nodesList = new HashSet<>(this.nodesList);
-        newGraph.edgesList = new HashSet<>(this.edgesList);
+public IGraph copy() {
+    Graph newGraph = new Graph();
 
-        for (INode n : this.outEdgesMap.keySet()) {
-            HashSet<IEdge> originalEdges = this.outEdgesMap.get(n);
-            newGraph.outEdgesMap.put(n, new HashSet<>(originalEdges));
-        }
+    // 1. Copier les propriétés (nécessite des méthodes de copie dans ces classes)
+    // newGraph.sizes = this.sizes.copy();
+    // newGraph.layout = this.layout.copy();
+    // newGraph.colors = this.colors.copy();
 
-        for (INode n : this.inEdgesMap.keySet()) {
-            HashSet<IEdge> originalEdges = this.inEdgesMap.get(n);
-            newGraph.inEdgesMap.put(n, new HashSet<>(originalEdges));
-        }
-        
-        return newGraph;
+    // Table de correspondance : Ancien Nœud -> Nouveau Nœud
+    Map<INode, INode> nodeMap = new HashMap<>();
+
+    // 2. Dupliquer physiquement chaque nœud
+    for (INode oldNode : this.nodesSet) {
+        INode newNode = oldNode.copy(); 
+        nodeMap.put(oldNode, newNode);
+        newGraph.nodesSet.add(newNode);
     }
+
+    // Table de correspondance : Ancienne Arête -> Nouvelle Arête
+    Map<IEdge, IEdge> edgeMap = new HashMap<>();
+
+    // 3. Dupliquer physiquement chaque arête
+    for (IEdge oldEdge : this.edgesSet) {
+        IEdge newEdge = oldEdge.copy(); 
+        edgeMap.put(oldEdge, newEdge);
+        newGraph.edgesSet.add(newEdge);
+    }
+
+    // 4. Reconstruire les relations (outEdgesMap) avec les nouvelles références
+    for (INode oldNode : this.outEdgesMap.keySet()) {
+        INode newNode = nodeMap.get(oldNode);
+        HashSet<IEdge> newOutEdges = new HashSet<>();
+        
+        for (IEdge oldEdge : this.outEdgesMap.get(oldNode)) {
+            newOutEdges.add(edgeMap.get(oldEdge));
+        }
+        newGraph.outEdgesMap.put(newNode, newOutEdges);
+    }
+
+    // 5. Reconstruire les relations (inEdgesMap) avec les nouvelles références
+    for (INode oldNode : this.inEdgesMap.keySet()) {
+        INode newNode = nodeMap.get(oldNode);
+        HashSet<IEdge> newInEdges = new HashSet<>();
+        
+        for (IEdge oldEdge : this.inEdgesMap.get(oldNode)) {
+            newInEdges.add(edgeMap.get(oldEdge));
+        }
+        newGraph.inEdgesMap.put(newNode, newInEdges);
+    }
+    return newGraph;
+}
 
     @Override
     public INode addNode() {
@@ -78,7 +112,7 @@ public class Graph implements IGraph {
         if (n == null) {
             throw new IllegalArgumentException("Impossible d'ajouter un nœud null au graphe.");
         }
-        nodesList.add(n);
+        nodesSet.add(n);
         if (!outEdgesMap.containsKey(n)) {
             outEdgesMap.put(n, new HashSet<>());
         }
@@ -98,7 +132,7 @@ public class Graph implements IGraph {
         addNode(e.source());
         addNode(e.target());
  
-        edgesList.add(e);
+        edgesSet.add(e);
         outEdgesMap.get(e.source()).add(e);
         inEdgesMap.get(e.target()).add(e);
 
@@ -113,12 +147,12 @@ public class Graph implements IGraph {
 
     @Override
     public void delNode(INode n) {
-        if (nodesList.contains(n)) {
+        if (nodesSet.contains(n)) {
             ArrayList<IEdge> edges = getInOutEdges(n);
             for (IEdge e : edges) {
                 delEdge(e);
             }
-            nodesList.remove(n);
+            nodesSet.remove(n);
             outEdgesMap.remove(n);
             inEdgesMap.remove(n);
         }
@@ -126,8 +160,8 @@ public class Graph implements IGraph {
 
     @Override
     public void delEdge(IEdge e) {
-        if (edgesList.contains(e)) {
-            edgesList.remove(e);
+        if (edgesSet.contains(e)) {
+            edgesSet.remove(e);
             outEdgesMap.get(e.source()).remove(e);
             inEdgesMap.get(e.target()).remove(e);
         }
@@ -135,12 +169,12 @@ public class Graph implements IGraph {
 
     @Override
     public int numberOfNodes() {
-        return nodesList.size();
+        return nodesSet.size();
     }
 
     @Override
     public int numberOfEdges() {
-        return edgesList.size();
+        return edgesSet.size();
     }
 
     @Override
@@ -196,12 +230,12 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<INode> getNodes() {
-        return new ArrayList<>(nodesList);
+        return new ArrayList<>(nodesSet);
     }
 
     @Override
     public ArrayList<IEdge> getEdges() {
-        return new ArrayList<>(edgesList);
+        return new ArrayList<>(edgesSet);
     }
 
     @Override
@@ -297,7 +331,7 @@ public class Graph implements IGraph {
     //REVOIR
     @Override
     public void setAllNodesSizes(Size s) {
-        for (INode n : nodesList) {
+        for (INode n : nodesSet) {
             sizes.setNodeValue(n, s);
         }
     }
@@ -305,7 +339,7 @@ public class Graph implements IGraph {
     //REVOIR
     @Override
     public void setAllEdgesWidths(Double width) {
-        for (IEdge e : edgesList) {
+        for (IEdge e : edgesSet) {
             sizes.setEdgeValue(e, width);
         }
     }
@@ -360,14 +394,14 @@ public class Graph implements IGraph {
 
     @Override
     public ArrayList<Coord> getBoundingBox() {
-        if (nodesList.isEmpty()) {
+        if (nodesSet.isEmpty()) {
             throw new IllegalStateException("Impossible de calculer la Bounding Box : le graphe est vide.");
         }
         double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
-        for (INode n : nodesList) {
+        for (INode n : nodesSet) {
             Coord pos = getNodePosition(n);
             if (pos.getX() < minX) {
                 minX = pos.getX();
@@ -472,12 +506,12 @@ public class Graph implements IGraph {
     }
     
     private void checkContainsNode(INode n) {
-        if (n == null || !nodesList.contains(n)) {
+        if (n == null || !nodesSet.contains(n)) {
         throw new IllegalArgumentException("Le nœud n'appartient pas à ce graphe.");
         }
     }
     private void checkContainsEdge(IEdge e) {
-        if (e == null || !edgesList.contains(e)) {
+        if (e == null || !edgesSet.contains(e)) {
         throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
         }
     }
