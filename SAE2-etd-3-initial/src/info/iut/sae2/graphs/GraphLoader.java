@@ -9,8 +9,9 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
- *
  * @author rbourqui
+ * @author Rafael Peeters
+ * @author Antonin Carpentier
  */
 public class GraphLoader {
 
@@ -111,4 +112,5 @@ public class GraphLoader {
             System.err.println(ioe.getMessage());
         }
     }
+
 }

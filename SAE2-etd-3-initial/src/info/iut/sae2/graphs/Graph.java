@@ -11,14 +11,15 @@ import info.iut.sae2.algorithm.FiveColorationPlanarAlgorithm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-
 
 /**
- * Implementation of the Igraph interface.
- * We specifically referred to:
+ * A class implementing the IEdge interface.
+ *
+ * We referred to:
  * https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html
- * @author carpentier, peeters
+ *
+ * @author Peeters
+ * @author Carpentier
  */
 public class Graph implements IGraph {
 
@@ -46,7 +47,6 @@ public class Graph implements IGraph {
     public IGraph createGraph() {
         return new Graph();
     }
-
 
     @Override
     public IGraph copy() {
@@ -97,7 +97,7 @@ public class Graph implements IGraph {
         }
         addNode(e.source());
         addNode(e.target());
- 
+
         edgesSet.add(e);
         outEdgesMap.get(e.source()).add(e);
         inEdgesMap.get(e.target()).add(e);
@@ -238,7 +238,7 @@ public class Graph implements IGraph {
 
     @Override
     public IEdge getEdge(INode src, INode tgt, boolean oriented) {
-        checkContainsNode(src); 
+        checkContainsNode(src);
         checkContainsNode(tgt);
         if (outEdgesMap.containsKey(src)) {
             for (IEdge e : outEdgesMap.get(src)) {
@@ -470,17 +470,17 @@ public class Graph implements IGraph {
             }
         }
     }
-    
+
     private void checkContainsNode(INode n) {
         if (n == null || !nodesSet.contains(n)) {
-        throw new IllegalArgumentException("Le nœud n'appartient pas à ce graphe.");
+            throw new IllegalArgumentException("Le nœud n'appartient pas à ce graphe.");
         }
     }
+
     private void checkContainsEdge(IEdge e) {
         if (e == null || !edgesSet.contains(e)) {
-        throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
+            throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
         }
     }
-    
-}
 
+}

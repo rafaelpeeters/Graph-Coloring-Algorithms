@@ -2,6 +2,12 @@ package info.iut.sae2.graphs;
 
 import java.util.Objects;
 
+/**
+ * A class implementing the IEdge interface.
+ *
+ * @author Peeters 
+ * @author Carpentier
+ */
 public class Edge implements IEdge{
 
     private final INode source;

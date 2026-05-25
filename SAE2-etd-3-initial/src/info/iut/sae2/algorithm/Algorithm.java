@@ -3,6 +3,9 @@ package info.iut.sae2.algorithm;
 import info.iut.sae2.graphs.IGraph;
 import java.util.Map;
 
+/**
+ * @author rbourqui
+ */
 public interface Algorithm<T> {
     
     /**

@@ -1,7 +1,6 @@
 package info.iut.sae2.graphs;
 
 /**
- *
  * @author rbourqui
  */
 public class Coord {
@@ -163,4 +162,5 @@ public class Coord {
     public String toString() {
         return "(" + x + ", " + y + ")";
     }
+
 }
