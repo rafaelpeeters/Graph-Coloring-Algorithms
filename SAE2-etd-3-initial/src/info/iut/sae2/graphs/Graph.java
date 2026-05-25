@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * A class implementing the IEdge interface.
+ * A class implementing the IGraph interface.
  *
  * We referred to:
  * https://docs.oracle.com/javase/8/docs/api/java/lang/Throwable.html
