@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package info.iut.sae2;
 
 import info.iut.sae2.viewer.GraphViewer;
@@ -9,12 +5,11 @@ import javax.swing.UIManager;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 /**
- *
- * @author antcarpentier
- * @author rsarrazainpe
+ * @author rbourqui
+ * @author Carpentier
+ * @author Peetes
  */
 public class Main {
-    
     
     /**
     No javadoc is provided, there is no need to understand/modify this part of the code 
@@ -27,4 +22,5 @@ public class Main {
         myWindow.setVisible(true);
         myWindow.setTitle("Antonin Carpentier - Rafael Peeters");
     }
+
 }

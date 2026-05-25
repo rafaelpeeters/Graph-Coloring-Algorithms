@@ -1,14 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package info.iut.sae2.properties;
 
 import info.iut.sae2.graphs.IEdge;
 import info.iut.sae2.graphs.INode;
 
 /**
- *
  * @author rbourqui
  */
 public interface IProperty<T, U> {
@@ -72,4 +67,5 @@ public interface IProperty<T, U> {
      * @param e the edge to be removed
      */
     public void delEdge(IEdge e);
+    
 }

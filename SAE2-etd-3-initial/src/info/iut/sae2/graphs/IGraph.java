@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package info.iut.sae2.graphs;
 
 import info.iut.sae2.properties.ColorProperty;
@@ -10,7 +6,6 @@ import info.iut.sae2.properties.SizeProperty;
 import java.util.ArrayList;
 
 /**
- *
  * @author rbourqui
  */
 public interface IGraph {
@@ -411,4 +406,5 @@ public interface IGraph {
      * Color the nodes with a 5 colors algorithm (only for planar graphs)
      */  
     public void fiveColors();
+
 }
