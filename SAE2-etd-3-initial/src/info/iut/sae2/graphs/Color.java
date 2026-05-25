@@ -132,4 +132,39 @@ public class Color {
     public String toString(){
         return "("+ r + ", " + g + ", " + b + ", " + a + ")";
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + this.r;
+        hash = 97 * hash + this.g;
+        hash = 97 * hash + this.b;
+        hash = 97 * hash + this.a;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Color other = (Color) obj;
+        if (this.r != other.r) {
+            return false;
+        }
+        if (this.g != other.g) {
+            return false;
+        }
+        if (this.b != other.b) {
+            return false;
+        }
+        return this.a == other.a;
+    }
+    
 }
