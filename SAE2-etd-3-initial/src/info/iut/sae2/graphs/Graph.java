@@ -481,5 +481,6 @@ public class Graph implements IGraph {
         throw new IllegalArgumentException("L'arrete n'appartient pas à ce graphe.");
         }
     }
+    
 }
 
