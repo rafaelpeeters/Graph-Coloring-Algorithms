@@ -2,6 +2,8 @@ package info.iut.sae2.graphs;
 
 /**
  * @author rbourqui
+ * @author Peeters
+ * @author Carpentier
  */
 public class Color {
     

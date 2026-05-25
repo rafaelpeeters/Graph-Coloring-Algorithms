@@ -61,7 +61,7 @@ public class SixColorationPlanarAlgorithm implements Algorithm<ColorProperty> {
      *
      * @param g the graph of interest
      * @param nodesList the list of nodes
-     * @return a ColorProperty associating each node to its computed color
+     * @return a ColorProperty associating each node to its color
      */
     private ColorProperty colorNodes(IGraph g, ArrayList<INode> nodesList) {
         ColorProperty colors = new ColorProperty();

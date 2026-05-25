@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 
 /**
  * @author rbourqui
+ * @author Peeters
+ * @author Carpentier
  */
 public class ColorProperty extends AbstractProperty<Color, Color>{
 
