@@ -11,6 +11,7 @@ import info.iut.sae2.algorithm.FiveColorationPlanarAlgorithm;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 
 /**
@@ -48,57 +49,22 @@ public class Graph implements IGraph {
 
 
     @Override
-public IGraph copy() {
-    Graph newGraph = new Graph();
+    public IGraph copy() {
+        Graph newGraph = new Graph();
+        newGraph.nodesSet = new HashSet<>(this.nodesSet);
+        newGraph.edgesSet = new HashSet<>(this.edgesSet);
 
-    // 1. Copier les propriétés (nécessite des méthodes de copie dans ces classes)
-    // newGraph.sizes = this.sizes.copy();
-    // newGraph.layout = this.layout.copy();
-    // newGraph.colors = this.colors.copy();
-
-    // Table de correspondance : Ancien Nœud -> Nouveau Nœud
-    Map<INode, INode> nodeMap = new HashMap<>();
-
-    // 2. Dupliquer physiquement chaque nœud
-    for (INode oldNode : this.nodesSet) {
-        INode newNode = oldNode.copy(); 
-        nodeMap.put(oldNode, newNode);
-        newGraph.nodesSet.add(newNode);
-    }
-
-    // Table de correspondance : Ancienne Arête -> Nouvelle Arête
-    Map<IEdge, IEdge> edgeMap = new HashMap<>();
-
-    // 3. Dupliquer physiquement chaque arête
-    for (IEdge oldEdge : this.edgesSet) {
-        IEdge newEdge = oldEdge.copy(); 
-        edgeMap.put(oldEdge, newEdge);
-        newGraph.edgesSet.add(newEdge);
-    }
-
-    // 4. Reconstruire les relations (outEdgesMap) avec les nouvelles références
-    for (INode oldNode : this.outEdgesMap.keySet()) {
-        INode newNode = nodeMap.get(oldNode);
-        HashSet<IEdge> newOutEdges = new HashSet<>();
-        
-        for (IEdge oldEdge : this.outEdgesMap.get(oldNode)) {
-            newOutEdges.add(edgeMap.get(oldEdge));
+        for (INode n : this.outEdgesMap.keySet()) {
+            HashSet<IEdge> originalEdges = this.outEdgesMap.get(n);
+            newGraph.outEdgesMap.put(n, new HashSet<>(originalEdges));
         }
-        newGraph.outEdgesMap.put(newNode, newOutEdges);
-    }
 
-    // 5. Reconstruire les relations (inEdgesMap) avec les nouvelles références
-    for (INode oldNode : this.inEdgesMap.keySet()) {
-        INode newNode = nodeMap.get(oldNode);
-        HashSet<IEdge> newInEdges = new HashSet<>();
-        
-        for (IEdge oldEdge : this.inEdgesMap.get(oldNode)) {
-            newInEdges.add(edgeMap.get(oldEdge));
+        for (INode n : this.inEdgesMap.keySet()) {
+            HashSet<IEdge> originalEdges = this.inEdgesMap.get(n);
+            newGraph.inEdgesMap.put(n, new HashSet<>(originalEdges));
         }
-        newGraph.inEdgesMap.put(newNode, newInEdges);
+        return newGraph;
     }
-    return newGraph;
-}
 
     @Override
     public INode addNode() {
