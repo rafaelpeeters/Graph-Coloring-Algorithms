@@ -1,4 +1,4 @@
-# Graph Data Structure & Coloring Algorithms
+# Graph Coloring Algorithms
 
 A Java application built to create graphs, load them from files, and color them.
 It handles nodes, edges, connections between points, and display settings like colors and sizes.
